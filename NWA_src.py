@@ -1,7 +1,10 @@
 '''
-Created on Mar 14, 2013
-
-@author: charliex
+SLAC National Accelerator Laboratory
+Instrumentation and Controls Division
+Date: 03/14/2013
+author: Chengcheng Xu
+Summary:
+Automate the BPM characterization process by using PyVISA to communicate with a HP8753C Network Analyzer.  
 '''
 from visa import *
 from math import pow, exp
