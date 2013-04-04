@@ -1,0 +1,19 @@
+Project Title: SLAC BPM Characterization Program
+Author: Chengcheng Xu (Charlie)		Email: charliex@slac.stanford.edu
+Create Date: 03/20/2013
+
+Description:
+Uses the USB to GPIB adapter to communicate with a 8753C Network Analyzer
+Uses PyVISA for the GPIB communication
+
+Version:
+v0.4
+03/20/2013
+Initial development
+
+v1.0
+04/03/2013
+First realease
+The script uses 0Hz SPAN with 101 points to measure and average the S21 between strips
+The use can decide the frequency the BPM is characterized at
+The script will procduce a .txt file with the BPM serial number, characterization date and time, S21 reading, and the X/Y electrical center
