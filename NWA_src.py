@@ -19,8 +19,6 @@ class BPM_chara:
         print("Welcome to SLAC BPM characterization program\n")
         myinstr = get_instruments_list()
         print("Default GPIB address for the network analyzer is \"GPIB0:16\"\n")
-        #This is used when the script is asking the user to specify the instrument name
-        #myinstr = input("What is your instrument name? ") 
         while True:
             try:
                 self.my_instr = instrument("GPIB0::16")
@@ -35,17 +33,20 @@ class BPM_chara:
         print("Instrument is a %s %s, firmware version is %s. \n" % (manufact, model_num, firm_ver))
         
         
-        self.my_instr.write("OPC?;PRES") #Return instrument to preset
-        
+        self.my_instr.write("OPC?;PRES") #Set instrument to preset 
         self.instrument_timeout = self.my_instr.timeout
         #print("Time out timers is %s second" %self.instrument_timeout)
         self.BPM_ser = raw_input("Please enter BPM serial number:\n--->")
-        
-        self.BPM_record = open("BPM-"+self.BPM_ser+"-cal.txt", "w+")
+        self.filedate = datetime.datetime.now()
+        self.filedate_format = self.filedate.strftime("%d%b%Y")
+        self.rec_time_stampe = self.filedate.strftime("%Y-%m-%d %H:%M:%S")        
+
+
+        self.BPM_record = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+"_record.txt", "w+")
+        self.BPM_database = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+".txt", "w+")        
         #print("Filename: %s" %self.BPM_record.name)
         #print("File mode: %s" %self.BPM_record.mode)
         self.BPM_record.write("Calibration Date:")
-        self.rec_time_stampe = self.filedate.strftime("%Y-%m-%d %H:%M:%S")
         self.BPM_record.write("%s\n" %self.rec_time_stampe)
         self.BPM_record.write("BPM Serial Number: %s\n" %self.BPM_ser)
         self.BPM_pmcc_str = raw_input("Please enter BPM PCMM in mm: \n--->")
@@ -81,6 +82,7 @@ class BPM_chara:
 
         self.S21_measure()
         self.BPM_record.close()
+        self.BPM_database.close()
         
         
         
