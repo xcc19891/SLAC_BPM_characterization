@@ -14,7 +14,7 @@ import datetime
 
 class BPM_chara:
     def __init__(self):
-        self.dat_point = 201
+        self.dat_point = 201    # Setting the NWA data point
         self.dat_pt_str = str(self.dat_point)
         print("Welcome to SLAC BPM characterization program\n")
         myinstr = get_instruments_list()
@@ -27,45 +27,42 @@ class BPM_chara:
                 print("Please connect the network analyzer and try again.")
                 sys.exit("Exiting program")
             
-        instrument_attri = self.my_instr.ask("*IDN?")
+        instrument_attri = self.my_instr.ask("*IDN?")    # Getting the instrument information
         manufact, model_num, ser_num, firm_ver = instrument_attri.split(",",4)
         #manufact, model_num, ser_num, firm_ver, error = [0,0,0,0,0]    
         print("Instrument is a %s %s, firmware version is %s. \n" % (manufact, model_num, firm_ver))
         
         
-        self.my_instr.write("OPC?;PRES") #Set instrument to preset 
+        self.my_instr.write("OPC?;PRES")    # Set instrument to preset 
         self.instrument_timeout = self.my_instr.timeout
         #print("Time out timers is %s second" %self.instrument_timeout)
         self.BPM_ser = raw_input("Please enter BPM serial number:\n--->")
-        self.filedate = datetime.datetime.now()
+
+        self.filedate = datetime.datetime.now()    # Getting time of characterization
         self.filedate_format = self.filedate.strftime("%d%b%Y")
-        self.rec_time_stampe = self.filedate.strftime("%Y-%m-%d %H:%M:%S")        
-
-
+        self.rec_time_stampe = self.filedate.strftime("%Y-%m-%d %H:%M:%S")
+        # Opening files for recording
         self.BPM_record = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+"_record.txt", "w+")
-        self.BPM_database = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+".txt", "w+")        
-        #print("Filename: %s" %self.BPM_record.name)
-        #print("File mode: %s" %self.BPM_record.mode)
+        self.BPM_database = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+".txt", "w+")
+
         self.BPM_record.write("Calibration Date:")
         self.BPM_record.write("%s\n" %self.rec_time_stampe)
         self.BPM_record.write("BPM Serial Number: %s\n" %self.BPM_ser)
         self.BPM_pmcc_str = raw_input("Please enter BPM PCMM in mm: \n--->")
-        self.BPM_pmcc = (float(self.BPM_pmcc_str))*(10**-3)
+        self.BPM_pmcc = (float(self.BPM_pmcc_str))*(10**-3)    # Converting input into meter unit
         self.BPM_record.write("BPM PMCC is: %s mm\n" %self.BPM_pmcc_str)
-        
         self.BPM_cnt_f = raw_input("What is the BPM's processing freq? (In MHZ)\n---> ")
-        self.BPM_cnt_f_int = int(self.BPM_cnt_f)
-        self.my_instr.write("CENT "+self.BPM_cnt_f+" MHZ; SPAN 0 HZ;OPC?")
-        self.my_instr.write("POIN "+self.dat_pt_str)
+        self.BPM_cnt_f_int = int(self.BPM_cnt_f)    # Setting NWA frequency
+        self.my_instr.write("CENT "+self.BPM_cnt_f+" MHZ; SPAN 0 HZ;OPC?")    # Changing the span to 0Hz because we are only interested in one freq.
+        self.my_instr.write("POIN "+self.dat_pt_str)    # Set data point
         self.BPM_record.write("BPM processing freq: %s MHz\n" %self.BPM_cnt_f)
         self.my_instr.ask_for_values("OPC?")
         #self.my_instr.write("STAR "+self.NWA_star+" MHZ; STOP "+self.NWA_stop+" MHZ;OPC?")
-        self.my_instr.write("POWE10")        
-        self.my_instr.write("LINM")        
+        self.my_instr.write("POWE10")    # For the HP8753D model it can only output stimulis power of 10dBm
+        self.my_instr.write("LINM")      # Setting display to linear magnitude  
         
         print("WARNING:If you are running this process for the first time\n you need to calibrate the network analyzer")
         cal_opt = raw_input("Do you want to calibrate the Network analyzer?\n---> ")
-        
         if (cal_opt == "yes") or (cal_opt == "Yes") or (cal_opt == "Y"):
             self.NWA_cal()
         else:
@@ -74,11 +71,11 @@ class BPM_chara:
             print("USE AT YOUR OWN RISK!")
             
                 
-        self.AVER_data()
+        self.AVER_data()    # Turning on averaging 
         self.center_freq=self.my_instr.ask_for_values("CENT?")
-        print("Center Frequency %s. \n" % (self.center_freq))
+        print("Center Frequency %s. \n" % (self.center_freq))    # Double checking the center freq
         self.power=self.my_instr.ask_for_values("POWE?")
-        print("Power at %s dBm. \n" % (self.power))
+        print("Power at %s dBm. \n" % (self.power))              # Double checking the stimulis power
 
         self.S21_measure()
         self.BPM_record.close()
@@ -95,7 +92,7 @@ class BPM_chara:
         print("Turning on averaging")
     	self.my_instr.write("AVEROON")
         self.instr_avg = self.my_instr.ask("AVERO?")
-        self.instr_avg_wait_time = 5+(58)
+        self.instr_avg_wait_time = 5+(58)    # Guess work on how long to wait for the averaging to be done
         # print(self.instr_avg)
         if int(self.instr_avg) == 1:
         	time.sleep(0.00001)
@@ -109,8 +106,8 @@ class BPM_chara:
         self.instrument_timeout_def = self.instrument_timeout     #save the old timeout time
         self.instrument_timeout = 20.0
         self.my_instr.timeout = self.instrument_timeout        
+        
         #Instrument calibration code
-        #The 8753C Network Analyzer doesn't support the CALK35ME calkit, so the CALK35MM calkit is used
         self.my_instr.write("CALK35MM;CLES,ESE64")
         self.my_instr.write("CALIFUL2")                         #Performing a full 2-port cal
         self.my_instr.write("REFL")                             #Reflection calibration
@@ -126,6 +123,7 @@ class BPM_chara:
         self.my_instr.write("CLASS11C")
         self.my_instr.ask("*OPC?")
         self.my_instr.write("DONE")        
+        
         raw_input("Connect OPEN to port 2, then press enter")
         self.my_instr.write("CLASS22A")
         self.my_instr.ask("*OPC?")
@@ -148,7 +146,6 @@ class BPM_chara:
                 break
             except VisaIOError:
                 self.my_instr.ask("*OPC?")
-                
         print("Reflection calibration finished.")
         
         self.my_instr.write("TRAN")                                 #Transmission calibration
@@ -205,27 +202,27 @@ class BPM_chara:
         test1 = self.S_TRAN()
         test2 = self.S_TRAN()
         test3 = self.S_TRAN()        
-        self.my_instr.write("FORM4")
+        self.my_instr.write("FORM4")    # Output in ASCII 
         self.my_instr.write("WAIT")
         
         # ////////////////////////////
         # Measuring RED to BLUE
         # ////////////////////////////
-        raw_input("Connect port 1 to RED and port 2 to BLUE, then press enter")
+        raw_input("Connect port 1 to RED-(1) and port 2 to BLUE-(2), then press enter")
         print("Taking data\n")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;        
         self.my_instr.write("S21")          # S21 measurement
         self.my_instr.write("LINM")         # Linear magnitude
-        # self.my_instr.write("AUTO")        
         self.my_instr.write("IFBW 100HZ")   # IF bandwidth set to 100Hz
         self.my_instr.write("AUTO")         # Auto scale
         self.my_instr.write("WAIT")         # Wait for one clean sweep
+
         self.my_instr.write("AVERREST")     # reset the averaging 
         self.my_instr.write("AUTO")         # Auto scale
         time.sleep(self.instr_avg_wait_time)
-        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.write("WAIT")         # Wait for one clean sweep
         self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
@@ -239,9 +236,9 @@ class BPM_chara:
 
 
         self.my_instr.write("AVERREST")  # reset the averaging 
-        self.my_instr.write("WAIT")          # Wait for one clean sweep
-        self.my_instr.ask("*OPC?")
         time.sleep(self.instr_avg_wait_time)        
+        self.my_instr.write("WAIT")      # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -254,9 +251,9 @@ class BPM_chara:
 
 
         self.my_instr.write("AVERREST")  # reset the averaging 
-        self.my_instr.write("WAIT")          # Wait for one clean sweep
-        self.my_instr.ask("*OPC?")
-        time.sleep(self.instr_avg_wait_time)         
+        time.sleep(self.instr_avg_wait_time)
+        self.my_instr.write("WAIT")      # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")     
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -277,8 +274,7 @@ class BPM_chara:
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
         self.my_instr.write("AVERREST")  # reset the averaging 
-        self.my_instr.write("AUTO")
-        self.my_instr.write("WAIT")
+        self.my_instr.write("AUTO")        
         time.sleep(self.instr_avg_wait_time) 
         self.my_instr.write("WAIT")          # Wait for one clean sweep
         self.my_instr.ask("*OPC?")
@@ -331,8 +327,6 @@ class BPM_chara:
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
-        self.my_instr.write("AUTO")
-        self.my_instr.write("WAIT")
         
         self.my_instr.write("AVERREST")  # reset the averaging 
         self.my_instr.write("AUTO")        
@@ -388,7 +382,6 @@ class BPM_chara:
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
 
-        self.my_instr.write("AUTO")
         self.my_instr.write("AVERREST")  # reset the averaging 
         self.my_instr.write("AUTO")        
         time.sleep(self.instr_avg_wait_time)
