@@ -17,3 +17,8 @@ First realease
 The script uses 0Hz SPAN with 101 points to measure and average the S21 between strips
 The use can decide the frequency the BPM is characterized at
 The script will procduce a .txt file with the BPM serial number, characterization date and time, S21 reading, and the X/Y electrical center
+
+v1.1
+09/19/2016
+Fixing a wait bug for the 4th data acquisition.
+Adding a second text output document for database import

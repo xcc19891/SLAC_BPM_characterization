@@ -467,4 +467,7 @@ class BPM_chara:
         self.BPM_record.write("X average center(mm) is at: %s\n" % x_avg)
         self.BPM_record.write("Y average center(mm) is at: %s\n" % y_avg)
 
+        self.BPM_database.write("X average center(mm) is at: %s\n" % x_avg)
+        self.BPM_database.write("Y average center(mm) is at: %s\n" % y_avg)
+
             
