@@ -42,15 +42,14 @@ class BPM_chara:
         self.filedate_format = self.filedate.strftime("%d%b%Y")
         self.rec_time_stampe = self.filedate.strftime("%Y-%m-%d %H:%M:%S")
         # Opening files for recording
-        self.BPM_record = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+"_record.txt", "w+")
-        self.BPM_database = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+".txt", "w+")
-
+        self.BPM_record = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+".txt", "w+")
+        
         self.BPM_record.write("Calibration Date:")
         self.BPM_record.write("%s\n" %self.rec_time_stampe)
         self.BPM_record.write("BPM Serial Number: %s\n" %self.BPM_ser)
         self.BPM_pmcc_str = raw_input("Please enter BPM PCMM in mm: \n--->")
         self.BPM_pmcc = (float(self.BPM_pmcc_str))*(10**-3)    # Converting input into meter unit
-        self.BPM_record.write("BPM PMCC is: %s mm\n" %self.BPM_pmcc_str)
+        self.BPM_record.write("BPM PCMM is: %s mm\n" %self.BPM_pmcc_str)
         self.BPM_cnt_f = raw_input("What is the BPM's processing freq? (In MHZ)\n---> ")
         self.BPM_cnt_f_int = int(self.BPM_cnt_f)    # Setting NWA frequency
         self.my_instr.write("CENT "+self.BPM_cnt_f+" MHZ; SPAN 0 HZ;OPC?")    # Changing the span to 0Hz because we are only interested in one freq.
@@ -69,8 +68,7 @@ class BPM_chara:
             self.my_instr.write("RECA1")
             print("Using cal register 1")
             print("USE AT YOUR OWN RISK!")
-            
-                
+                        
         self.AVER_data()    # Turning on averaging 
         self.center_freq=self.my_instr.ask_for_values("CENT?")
         print("Center Frequency %s. \n" % (self.center_freq))    # Double checking the center freq
@@ -79,9 +77,7 @@ class BPM_chara:
 
         self.S21_measure()
         self.BPM_record.close()
-        self.BPM_database.close()
-        
-        
+                
         
 
     def AVER_data(self):
@@ -230,7 +226,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace1+=i
                 self.trace_data.extend([i])
-        self.trace1_avg = self.trace1/self.dat_point
+        self.trace1_avg = round(self.trace1/self.dat_point, 4)
         print(self.trace1_avg)
         test1["S21"] = self.trace1_avg
 
@@ -245,7 +241,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace2+=i
                 self.trace_data.extend([i])
-        self.trace2_avg = self.trace2/self.dat_point
+        self.trace2_avg = round(self.trace2/self.dat_point, 4)
         print(self.trace2_avg)        
         test2["S21"] = self.trace2_avg
 
@@ -260,7 +256,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace3+=i
                 self.trace_data.extend([i])
-        self.trace3_avg = self.trace3/self.dat_point
+        self.trace3_avg = round(self.trace3/self.dat_point, 4)
         print(self.trace3_avg)        
         test3["S21"] = self.trace3_avg
         print("\n\n")        
@@ -284,7 +280,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace1+=i
                 self.trace_data.extend([i])
-        self.trace1_avg = self.trace1/self.dat_point
+        self.trace1_avg = round(self.trace1/self.dat_point, 4)
         print(self.trace1_avg)
         test1["S41"] = self.trace1_avg
 
@@ -299,7 +295,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace2+=i
                 self.trace_data.extend([i])
-        self.trace2_avg = self.trace2/self.dat_point
+        self.trace2_avg = round(self.trace2/self.dat_point, 4)
         print(self.trace2_avg)        
         test2["S41"] = self.trace2_avg
         
@@ -314,7 +310,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace3+=i
                 self.trace_data.extend([i])
-        self.trace3_avg = self.trace3/self.dat_point
+        self.trace3_avg = round(self.trace3/self.dat_point, 4)
         print(self.trace3_avg)        
         test3["S41"] = self.trace3_avg
         print("\n\n")
@@ -339,7 +335,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace1+=i
                 self.trace_data.extend([i])
-        self.trace1_avg = self.trace1/self.dat_point
+        self.trace1_avg = round(self.trace1/self.dat_point, 4)
         print(self.trace1_avg)
         test1["S43"] = self.trace1_avg
 
@@ -354,7 +350,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace2+=i
                 self.trace_data.extend([i])
-        self.trace2_avg = self.trace2/self.dat_point
+        self.trace2_avg = round(self.trace2/self.dat_point, 4)
         print(self.trace2_avg)        
         test2["S43"] = self.trace2_avg
         
@@ -368,7 +364,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace3+=i
                 self.trace_data.extend([i])
-        self.trace3_avg = self.trace3/self.dat_point
+        self.trace3_avg = round(self.trace3/self.dat_point, 4)
         print(self.trace3_avg)        
         test3["S43"] = self.trace3_avg
         print("\n\n")
@@ -393,7 +389,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace1+=i
                 self.trace_data.extend([i])
-        self.trace1_avg = self.trace1/self.dat_point
+        self.trace1_avg = round(self.trace1/self.dat_point, 4)
         print(self.trace1_avg)
         test1["S23"] = self.trace1_avg
 
@@ -408,7 +404,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace2+=i
                 self.trace_data.extend([i])
-        self.trace2_avg = self.trace2/self.dat_point
+        self.trace2_avg = round(self.trace2/self.dat_point, 4)
         print(self.trace2_avg)        
         test2["S23"] = self.trace2_avg
         
@@ -423,7 +419,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace3+=i
                 self.trace_data.extend([i])
-        self.trace3_avg = self.trace3/self.dat_point
+        self.trace3_avg = round(self.trace3/self.dat_point, 4)
         print(self.trace3_avg)        
         test3["S23"] = self.trace3_avg
         print("\n\n")      
@@ -434,17 +430,17 @@ class BPM_chara:
         #print("Time out timer is changed back to %s sec" %self.my_instr.timeout)
         mm_conv = (10**3)
 
-        x1 = self.BPM_pmcc*((test1["S41"]-test1["S21"])+(test1["S43"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"])
-        y1 = self.BPM_pmcc*((test1["S41"]-test1["S43"])+(test1["S21"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"])
+        x1 = round(self.BPM_pmcc*((test1["S41"]-test1["S21"])+(test1["S43"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"]), 4)
+        y1 = round(self.BPM_pmcc*((test1["S41"]-test1["S43"])+(test1["S21"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"]), 4)
         
-        x2 = self.BPM_pmcc*((test2["S41"]-test2["S21"])+(test2["S43"]-test2["S23"]))/(test2["S21"]+test2["S41"]+test2["S43"]+test2["S23"])
-        y2 = self.BPM_pmcc*((test2["S41"]-test2["S43"])+(test2["S21"]-test2["S23"]))/(test2["S21"]+test2["S41"]+test2["S43"]+test2["S23"])
+        x2 = round(self.BPM_pmcc*((test2["S41"]-test2["S21"])+(test2["S43"]-test2["S23"]))/(test2["S21"]+test2["S41"]+test2["S43"]+test2["S23"]), 4)
+        y2 = round(self.BPM_pmcc*((test2["S41"]-test2["S43"])+(test2["S21"]-test2["S23"]))/(test2["S21"]+test2["S41"]+test2["S43"]+test2["S23"]), 4)
         
-        x3 = self.BPM_pmcc*((test3["S41"]-test3["S21"])+(test3["S43"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"])
-        y3 = self.BPM_pmcc*((test3["S41"]-test3["S43"])+(test3["S21"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"])
+        x3 = round(self.BPM_pmcc*((test3["S41"]-test3["S21"])+(test3["S43"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"]), 4)
+        y3 = round(self.BPM_pmcc*((test3["S41"]-test3["S43"])+(test3["S21"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"]), 4)
                 
-        x_avg = (x1+x2+x3)/3
-        y_avg = (y1+y2+y3)/3
+        x_avg = round((x1+x2+x3)/3, 4)
+        y_avg = round((y1+y2+y3)/3, 4)
 
         print("First sets of sample data:\n %s" %test1)
         print("Second sets of sample data:\n %s" %test2)
@@ -467,7 +463,9 @@ class BPM_chara:
         self.BPM_record.write("X average center(mm) is at: %s\n" % x_avg)
         self.BPM_record.write("Y average center(mm) is at: %s\n" % y_avg)
 
-        self.BPM_database.write("X average center(mm) is at: %s\n" % x_avg)
-        self.BPM_database.write("Y average center(mm) is at: %s\n" % y_avg)
+        self.BPM_record.write("<dbFields>\n")
+        self.BPM_record.write("Date,PCMM,Frequency,Horizontal Center,Vertical Center")
+        self.BPM_record.write(self.rec_time_stampe+","+self.PCMM+","+x_avg+","+y_avg+"\n")
+        self.BPM_record.write("</dbFields>")
 
             
