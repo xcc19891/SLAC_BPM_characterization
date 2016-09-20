@@ -3,7 +3,7 @@ Author: Chengcheng Xu (Charlie)		Email: charliex@slac.stanford.edu
 Create Date: 03/20/2013
 
 Description:
-Uses the USB to GPIB adapter to communicate with a 8753C Network Analyzer
+Uses the USB to GPIB adapter to communicate with a 8753C/D Network Analyzer
 Uses PyVISA for the GPIB communication
 
 Version:
