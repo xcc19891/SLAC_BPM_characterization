@@ -14,7 +14,7 @@ import datetime
 
 class BPM_chara:
     def __init__(self):
-        self.dat_point = 101
+        self.dat_point = 201
         self.dat_pt_str = str(self.dat_point)
         print("Welcome to SLAC BPM characterization program\n")
         myinstr = get_instruments_list()
@@ -35,7 +35,7 @@ class BPM_chara:
         print("Instrument is a %s %s, firmware version is %s. \n" % (manufact, model_num, firm_ver))
         
         
-        self.my_instr.write("OPC?;PRES")                        #Return instrument to preset
+        self.my_instr.write("OPC?;PRES") #Return instrument to preset
         
         self.instrument_timeout = self.my_instr.timeout
         #print("Time out timers is %s second" %self.instrument_timeout)
@@ -45,23 +45,22 @@ class BPM_chara:
         #print("Filename: %s" %self.BPM_record.name)
         #print("File mode: %s" %self.BPM_record.mode)
         self.BPM_record.write("Calibration Date:")
-        self.rec_time_stampe = datetime.datetime.today()
+        self.rec_time_stampe = self.filedate.strftime("%Y-%m-%d %H:%M:%S")
         self.BPM_record.write("%s\n" %self.rec_time_stampe)
         self.BPM_record.write("BPM Serial Number: %s\n" %self.BPM_ser)
-        self.BPM_pmcc_str = raw_input("Please enter BPM PMCC in mm: \n--->")
+        self.BPM_pmcc_str = raw_input("Please enter BPM PCMM in mm: \n--->")
         self.BPM_pmcc = (float(self.BPM_pmcc_str))*(10**-3)
         self.BPM_record.write("BPM PMCC is: %s mm\n" %self.BPM_pmcc_str)
         
-        self.BPM_cnt_f = raw_input("What style is the BPM's processing freq? (In MHZ)\n---> ")
+        self.BPM_cnt_f = raw_input("What is the BPM's processing freq? (In MHZ)\n---> ")
         self.BPM_cnt_f_int = int(self.BPM_cnt_f)
         self.my_instr.write("CENT "+self.BPM_cnt_f+" MHZ; SPAN 0 HZ;OPC?")
         self.my_instr.write("POIN "+self.dat_pt_str)
         self.BPM_record.write("BPM processing freq: %s MHz\n" %self.BPM_cnt_f)
         self.my_instr.ask_for_values("OPC?")
         #self.my_instr.write("STAR "+self.NWA_star+" MHZ; STOP "+self.NWA_stop+" MHZ;OPC?")
-        self.my_instr.write("POWE15")        
+        self.my_instr.write("POWE10")        
         self.my_instr.write("LINM")        
-
         
         print("WARNING:If you are running this process for the first time\n you need to calibrate the network analyzer")
         cal_opt = raw_input("Do you want to calibrate the Network analyzer?\n---> ")
@@ -70,20 +69,36 @@ class BPM_chara:
             self.NWA_cal()
         else:
             self.my_instr.write("RECA1")
-        
+            print("Using cal register 1")
+            print("USE AT YOUR OWN RISK!")
+            
+                
+        self.AVER_data()
+        self.center_freq=self.my_instr.ask_for_values("CENT?")
+        print("Center Frequency %s. \n" % (self.center_freq))
+        self.power=self.my_instr.ask_for_values("POWE?")
+        print("Power at %s dBm. \n" % (self.power))
+
         self.S21_measure()
         self.BPM_record.close()
         
         
         
 
-    def AVG_prt(self):
-        if self.instr_avg == 1:
-            self.my_instr.write("AVERO OFF")
-            print ("Turning averaging off to switch ")
+    def AVER_data(self):
+        # self.instr_avgf = raw_input("What averaging factor would you like to use? (recommend 70, range 1-99)\n---->")
+        self.instr_avgf = "20"
+        self.instr_avgf_int = int(self.instr_avgf)
+        self.my_instr.write("AVERFACT"+self.instr_avgf)
+        print("Turning on averaging")
+    	self.my_instr.write("AVEROON")
+        self.instr_avg = self.my_instr.ask("AVERO?")
+        self.instr_avg_wait_time = 5+(58)
+        # print(self.instr_avg)
+        if int(self.instr_avg) == 1:
+        	time.sleep(0.00001)
         else:
-            self.my_instr.write("AVERO ON")
-            print ("Averaging is turned on, please be patient")
+            print ("Averaging is not turned on, something is wrong")
             
     def S_TRAN(self):
         return {"S21":0,"S41":0,"S23":0,"S43":0}
@@ -191,17 +206,25 @@ class BPM_chara:
         self.my_instr.write("FORM4")
         self.my_instr.write("WAIT")
         
+        # ////////////////////////////
+        # Measuring RED to BLUE
+        # ////////////////////////////
         raw_input("Connect port 1 to RED and port 2 to BLUE, then press enter")
+        print("Taking data\n")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;        
-        self.my_instr.write("S21")
-        self.my_instr.write("LINM")
-        self.my_instr.write("AUTO")        
-        self.my_instr.write("IFBW 100HZ")
-        self.my_instr.write("AUTO")
-        self.my_instr.write("WAIT")
-        time.sleep(5)        
+        self.my_instr.write("S21")          # S21 measurement
+        self.my_instr.write("LINM")         # Linear magnitude
+        # self.my_instr.write("AUTO")        
+        self.my_instr.write("IFBW 100HZ")   # IF bandwidth set to 100Hz
+        self.my_instr.write("AUTO")         # Auto scale
+        self.my_instr.write("WAIT")         # Wait for one clean sweep
+        self.my_instr.write("AVERREST")     # reset the averaging 
+        self.my_instr.write("AUTO")         # Auto scale
+        time.sleep(self.instr_avg_wait_time)
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -211,8 +234,12 @@ class BPM_chara:
         self.trace1_avg = self.trace1/self.dat_point
         print(self.trace1_avg)
         test1["S21"] = self.trace1_avg
-        time.sleep(2)
-        
+
+
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
+        time.sleep(self.instr_avg_wait_time)        
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -222,8 +249,12 @@ class BPM_chara:
         self.trace2_avg = self.trace2/self.dat_point
         print(self.trace2_avg)        
         test2["S21"] = self.trace2_avg
-        time.sleep(2)
-        
+
+
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
+        time.sleep(self.instr_avg_wait_time)         
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -234,14 +265,21 @@ class BPM_chara:
         print(self.trace3_avg)        
         test3["S21"] = self.trace3_avg
         print("\n\n")        
-            
+
+        # ////////////////////////////
+        # Measuring RED to GREEN
+        # ////////////////////////////            
         raw_input("Connect port 1 to RED and port 2 to GREEN, then press enter")
+        print("Taking data\n")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
+        self.my_instr.write("AVERREST")  # reset the averaging 
         self.my_instr.write("AUTO")
         self.my_instr.write("WAIT")
-        time.sleep(5)
+        time.sleep(self.instr_avg_wait_time) 
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -251,9 +289,12 @@ class BPM_chara:
         self.trace1_avg = self.trace1/self.dat_point
         print(self.trace1_avg)
         test1["S41"] = self.trace1_avg
-        time.sleep(2)
-        
-        self.my_instr.write("WAIT")
+
+
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        time.sleep(self.instr_avg_wait_time) 
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -263,9 +304,12 @@ class BPM_chara:
         self.trace2_avg = self.trace2/self.dat_point
         print(self.trace2_avg)        
         test2["S41"] = self.trace2_avg
-        time.sleep(2)
         
-        self.my_instr.write("WAIT")
+
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        time.sleep(self.instr_avg_wait_time) 
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -277,14 +321,22 @@ class BPM_chara:
         test3["S41"] = self.trace3_avg
         print("\n\n")
         
-        
+        # ////////////////////////////
+        # Measuring YELLOW to GREEN
+        # ////////////////////////////        
         raw_input("Connect port 1 to YELLOW and port 2 to GREEN, then press enter")
+        print("Taking data\n")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
         self.my_instr.write("AUTO")
         self.my_instr.write("WAIT")
-        time.sleep(5)
+        
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        self.my_instr.write("AUTO")        
+        time.sleep(self.instr_avg_wait_time)
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -294,9 +346,12 @@ class BPM_chara:
         self.trace1_avg = self.trace1/self.dat_point
         print(self.trace1_avg)
         test1["S43"] = self.trace1_avg
-        time.sleep(2)
-        
-        self.my_instr.write("WAIT")
+
+
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        time.sleep(self.instr_avg_wait_time) 
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -306,8 +361,10 @@ class BPM_chara:
         self.trace2_avg = self.trace2/self.dat_point
         print(self.trace2_avg)        
         test2["S43"] = self.trace2_avg
-        time.sleep(2)
         
+
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        time.sleep(self.instr_avg_wait_time) 
         self.my_instr.write("WAIT")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
@@ -319,14 +376,22 @@ class BPM_chara:
         print(self.trace3_avg)        
         test3["S43"] = self.trace3_avg
         print("\n\n")
-        
+
+        # ////////////////////////////
+        # Measuring YELLOW to BLUE
+        # ////////////////////////////        
         raw_input("Connect port 1 to YELLOW and port 2 to BLUE, then press enter")
+        print("Taking data\n")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
+
         self.my_instr.write("AUTO")
-        self.my_instr.write("WAIT")
-        time.sleep(5)
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        self.my_instr.write("AUTO")        
+        time.sleep(self.instr_avg_wait_time)
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -336,9 +401,12 @@ class BPM_chara:
         self.trace1_avg = self.trace1/self.dat_point
         print(self.trace1_avg)
         test1["S23"] = self.trace1_avg
-        time.sleep(2)
-        
-        self.my_instr.write("WAIT")
+
+
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        time.sleep(self.instr_avg_wait_time) 
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -348,9 +416,12 @@ class BPM_chara:
         self.trace2_avg = self.trace2/self.dat_point
         print(self.trace2_avg)        
         test2["S23"] = self.trace2_avg
-        time.sleep(2)
         
-        self.my_instr.write("WAIT")
+
+        self.my_instr.write("AVERREST")  # reset the averaging 
+        time.sleep(self.instr_avg_wait_time) 
+        self.my_instr.write("WAIT")          # Wait for one clean sweep
+        self.my_instr.ask("*OPC?")
         self.trace = self.my_instr.ask_for_values("OUTPFORM")
         self.trace_len = len(self.trace)
         for i in self.trace:
@@ -366,7 +437,8 @@ class BPM_chara:
         self.instrument_timeout = self.instrument_timeout_def
         self.my_instr.timeout = self.instrument_timeout
         #print("Time out timer is changed back to %s sec" %self.my_instr.timeout)
-                  
+        mm_conv = (10**3)
+
         x1 = self.BPM_pmcc*((test1["S41"]-test1["S21"])+(test1["S43"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"])
         y1 = self.BPM_pmcc*((test1["S41"]-test1["S43"])+(test1["S21"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"])
         
@@ -376,12 +448,16 @@ class BPM_chara:
         x3 = self.BPM_pmcc*((test3["S41"]-test3["S21"])+(test3["S43"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"])
         y3 = self.BPM_pmcc*((test3["S41"]-test3["S43"])+(test3["S21"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"])
                 
-        mm_conv = (10**3)
+        x_avg = (x1+x2+x3)/3
+        y_avg = (y1+y2+y3)/3
+
         print("First sets of sample data:\n %s" %test1)
         print("Second sets of sample data:\n %s" %test2)
         print("Third sets of sample data:\n %s" %test3)
         print("X center(mm) for\n1st set: %s,\n2nd set: %s,\n3rd set: %s\n" %((x1*mm_conv),(x2*mm_conv),(x3*mm_conv)))
         print("Y center(mm) for\n1st set: %s,\n2nd set: %s,\n3rd set: %s\n" %((y1*mm_conv),(y2*mm_conv),(y3*mm_conv)))
+        print("X average center(mm) is at: %s\n" % x_avg)
+        print("Y average center(mm) is at: %s\n" % y_avg)
   
         self.BPM_record.write("Record format is: \n")
         self.BPM_record.write("S21,S41,S23,S43\n")
@@ -392,4 +468,8 @@ class BPM_chara:
         self.BPM_record.write("%s,%s,%s\n" %((x1*mm_conv),(x2*mm_conv),(x3*mm_conv)))
         self.BPM_record.write("Y center(mm) is at:\n")
         self.BPM_record.write("%s,%s,%s\n" %((y1*mm_conv),(y2*mm_conv),(y3*mm_conv)))
+        
+        self.BPM_record.write("X average center(mm) is at: %s\n" % x_avg)
+        self.BPM_record.write("Y average center(mm) is at: %s\n" % y_avg)
+
             
