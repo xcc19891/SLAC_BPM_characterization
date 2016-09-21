@@ -15,6 +15,7 @@ import datetime
 class BPM_chara:
     def __init__(self):
         self.dat_point = 201    # Setting the NWA data point
+        self.roundpoint = 4
         self.dat_pt_str = str(self.dat_point)
         print("Welcome to SLAC BPM characterization program\n")
         myinstr = get_instruments_list()
@@ -39,17 +40,17 @@ class BPM_chara:
         self.BPM_ser = raw_input("Please enter BPM serial number:\n--->")
 
         self.filedate = datetime.datetime.now()    # Getting time of characterization
-        self.filedate_format = self.filedate.strftime("%d%b%Y")
+        self.filedate_format = self.filedate.strftime("%d%b%Y-%H_%M_%S")
         self.rec_time_stampe = self.filedate.strftime("%Y-%m-%d %H:%M:%S")
         # Opening files for recording
-        self.BPM_record = open("BPM-"+self.BPM_ser+"-cal-"+sefl.filedate_format+".txt", "w+")
+        self.BPM_record = open("BPM-"+self.BPM_ser+"-cal-"+self.filedate_format+".txt", "w+")
         
         self.BPM_record.write("Calibration Date:")
         self.BPM_record.write("%s\n" %self.rec_time_stampe)
         self.BPM_record.write("BPM Serial Number: %s\n" %self.BPM_ser)
-        self.BPM_pmcc_str = raw_input("Please enter BPM PCMM in mm: \n--->")
-        self.BPM_pmcc = (float(self.BPM_pmcc_str))*(10**-3)    # Converting input into meter unit
-        self.BPM_record.write("BPM PCMM is: %s mm\n" %self.BPM_pmcc_str)
+        self.BPM_pmcc_str = raw_input("Please enter BPM PCMM in mm (1/4 of the BPM inner diameter): \n--->")
+        self.BPM_pmcc = (float(self.BPM_pmcc_str))
+        self.BPM_record.write("BPM PCMM: %s mm (1/4 of the inner diameter)\n" %self.BPM_pmcc_str)
         self.BPM_cnt_f = raw_input("What is the BPM's processing freq? (In MHZ)\n---> ")
         self.BPM_cnt_f_int = int(self.BPM_cnt_f)    # Setting NWA frequency
         self.my_instr.write("CENT "+self.BPM_cnt_f+" MHZ; SPAN 0 HZ;OPC?")    # Changing the span to 0Hz because we are only interested in one freq.
@@ -71,9 +72,12 @@ class BPM_chara:
                         
         self.AVER_data()    # Turning on averaging 
         self.center_freq=self.my_instr.ask_for_values("CENT?")
-        print("Center Frequency %s. \n" % (self.center_freq))    # Double checking the center freq
+        freq1 = str(self.center_freq).split('[')[1]
+        self.center_freq = freq1.split(']')[0]
+        print("Center Frequency: %s Hz\n" % (self.center_freq))    # Double checking the center freq
         self.power=self.my_instr.ask_for_values("POWE?")
         print("Power at %s dBm. \n" % (self.power))              # Double checking the stimulis power
+        self.BPM_record.write("NWA stimulis power: %s dBm\n" %self.power)
 
         self.S21_measure()
         self.BPM_record.close()
@@ -88,7 +92,8 @@ class BPM_chara:
         print("Turning on averaging")
     	self.my_instr.write("AVEROON")
         self.instr_avg = self.my_instr.ask("AVERO?")
-        self.instr_avg_wait_time = 5+(58)    # Guess work on how long to wait for the averaging to be done
+        # self.instr_avg_wait_time = 5+(58)    # Guess work on hosw long to wait for the averaging to be done
+        self.instr_avg_wait_time = 2         # For testing only
         # print(self.instr_avg)
         if int(self.instr_avg) == 1:
         	time.sleep(0.00001)
@@ -205,7 +210,7 @@ class BPM_chara:
         # Measuring RED to BLUE
         # ////////////////////////////
         raw_input("Connect port 1 to RED-(1) and port 2 to BLUE-(2), then press enter")
-        print("Taking data\n")
+        print("Taking data")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;        
@@ -217,6 +222,8 @@ class BPM_chara:
 
         self.my_instr.write("AVERREST")     # reset the averaging 
         self.my_instr.write("AUTO")         # Auto scale
+        time.sleep(4)
+        self.my_instr.write("AVERREST")     # reset the averaging 
         time.sleep(self.instr_avg_wait_time)
         self.my_instr.write("WAIT")         # Wait for one clean sweep
         self.my_instr.ask("*OPC?")
@@ -226,7 +233,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace1+=i
                 self.trace_data.extend([i])
-        self.trace1_avg = round(self.trace1/self.dat_point, 4)
+        self.trace1_avg = round(self.trace1/self.dat_point, self.roundpoint)
         print(self.trace1_avg)
         test1["S21"] = self.trace1_avg
 
@@ -241,7 +248,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace2+=i
                 self.trace_data.extend([i])
-        self.trace2_avg = round(self.trace2/self.dat_point, 4)
+        self.trace2_avg = round(self.trace2/self.dat_point, self.roundpoint)
         print(self.trace2_avg)        
         test2["S21"] = self.trace2_avg
 
@@ -256,7 +263,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace3+=i
                 self.trace_data.extend([i])
-        self.trace3_avg = round(self.trace3/self.dat_point, 4)
+        self.trace3_avg = round(self.trace3/self.dat_point, self.roundpoint)
         print(self.trace3_avg)        
         test3["S21"] = self.trace3_avg
         print("\n\n")        
@@ -264,13 +271,15 @@ class BPM_chara:
         # ////////////////////////////
         # Measuring RED to GREEN
         # ////////////////////////////            
-        raw_input("Connect port 1 to RED and port 2 to GREEN, then press enter")
-        print("Taking data\n")
+        raw_input("Connect port 1 to RED-(1) and port 2 to GREEN-(4), then press enter")
+        print("Taking data")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
         self.my_instr.write("AVERREST")  # reset the averaging 
         self.my_instr.write("AUTO")        
+        time.sleep(4)
+        self.my_instr.write("AVERREST")     # reset the averaging 
         time.sleep(self.instr_avg_wait_time) 
         self.my_instr.write("WAIT")          # Wait for one clean sweep
         self.my_instr.ask("*OPC?")
@@ -280,7 +289,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace1+=i
                 self.trace_data.extend([i])
-        self.trace1_avg = round(self.trace1/self.dat_point, 4)
+        self.trace1_avg = round(self.trace1/self.dat_point, self.roundpoint)
         print(self.trace1_avg)
         test1["S41"] = self.trace1_avg
 
@@ -295,7 +304,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace2+=i
                 self.trace_data.extend([i])
-        self.trace2_avg = round(self.trace2/self.dat_point, 4)
+        self.trace2_avg = round(self.trace2/self.dat_point, self.roundpoint)
         print(self.trace2_avg)        
         test2["S41"] = self.trace2_avg
         
@@ -310,7 +319,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace3+=i
                 self.trace_data.extend([i])
-        self.trace3_avg = round(self.trace3/self.dat_point, 4)
+        self.trace3_avg = round(self.trace3/self.dat_point, self.roundpoint)
         print(self.trace3_avg)        
         test3["S41"] = self.trace3_avg
         print("\n\n")
@@ -318,14 +327,16 @@ class BPM_chara:
         # ////////////////////////////
         # Measuring YELLOW to GREEN
         # ////////////////////////////        
-        raw_input("Connect port 1 to YELLOW and port 2 to GREEN, then press enter")
-        print("Taking data\n")
+        raw_input("Connect port 1 to YELLOW-(3) and port 2 to GREEN-(4), then press enter")
+        print("Taking data")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
         
         self.my_instr.write("AVERREST")  # reset the averaging 
         self.my_instr.write("AUTO")        
+        time.sleep(4)
+        self.my_instr.write("AVERREST")     # reset the averaging 
         time.sleep(self.instr_avg_wait_time)
         self.my_instr.write("WAIT")          # Wait for one clean sweep
         self.my_instr.ask("*OPC?")
@@ -335,7 +346,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace1+=i
                 self.trace_data.extend([i])
-        self.trace1_avg = round(self.trace1/self.dat_point, 4)
+        self.trace1_avg = round(self.trace1/self.dat_point, self.roundpoint)
         print(self.trace1_avg)
         test1["S43"] = self.trace1_avg
 
@@ -350,7 +361,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace2+=i
                 self.trace_data.extend([i])
-        self.trace2_avg = round(self.trace2/self.dat_point, 4)
+        self.trace2_avg = round(self.trace2/self.dat_point, self.roundpoint)
         print(self.trace2_avg)        
         test2["S43"] = self.trace2_avg
         
@@ -364,7 +375,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace3+=i
                 self.trace_data.extend([i])
-        self.trace3_avg = round(self.trace3/self.dat_point, 4)
+        self.trace3_avg = round(self.trace3/self.dat_point, self.roundpoint)
         print(self.trace3_avg)        
         test3["S43"] = self.trace3_avg
         print("\n\n")
@@ -372,14 +383,16 @@ class BPM_chara:
         # ////////////////////////////
         # Measuring YELLOW to BLUE
         # ////////////////////////////        
-        raw_input("Connect port 1 to YELLOW and port 2 to BLUE, then press enter")
-        print("Taking data\n")
+        raw_input("Connect port 1 to YELLOW-(3) and port 2 to BLUE-(2), then press enter")
+        print("Taking data")
         self.trace = []
         self.trace_data = []
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
 
         self.my_instr.write("AVERREST")  # reset the averaging 
-        self.my_instr.write("AUTO")        
+        self.my_instr.write("AUTO")
+        time.sleep(4)
+        self.my_instr.write("AVERREST")     # reset the averaging         
         time.sleep(self.instr_avg_wait_time)
         self.my_instr.write("WAIT")          # Wait for one clean sweep
         self.my_instr.ask("*OPC?")
@@ -389,7 +402,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace1+=i
                 self.trace_data.extend([i])
-        self.trace1_avg = round(self.trace1/self.dat_point, 4)
+        self.trace1_avg = round(self.trace1/self.dat_point, self.roundpoint)
         print(self.trace1_avg)
         test1["S23"] = self.trace1_avg
 
@@ -404,7 +417,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace2+=i
                 self.trace_data.extend([i])
-        self.trace2_avg = round(self.trace2/self.dat_point, 4)
+        self.trace2_avg = round(self.trace2/self.dat_point, self.roundpoint)
         print(self.trace2_avg)        
         test2["S23"] = self.trace2_avg
         
@@ -419,7 +432,7 @@ class BPM_chara:
             if (i != 0.0):
                 self.trace3+=i
                 self.trace_data.extend([i])
-        self.trace3_avg = round(self.trace3/self.dat_point, 4)
+        self.trace3_avg = round(self.trace3/self.dat_point, self.roundpoint)
         print(self.trace3_avg)        
         test3["S23"] = self.trace3_avg
         print("\n\n")      
@@ -430,42 +443,40 @@ class BPM_chara:
         #print("Time out timer is changed back to %s sec" %self.my_instr.timeout)
         mm_conv = (10**3)
 
-        x1 = round(self.BPM_pmcc*((test1["S41"]-test1["S21"])+(test1["S43"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"]), 4)
-        y1 = round(self.BPM_pmcc*((test1["S41"]-test1["S43"])+(test1["S21"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"]), 4)
+        x1 = round(self.BPM_pmcc*((test1["S41"]-test1["S21"])+(test1["S43"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"]), self.roundpoint)
+        y1 = round(self.BPM_pmcc*((test1["S41"]-test1["S43"])+(test1["S21"]-test1["S23"]))/(test1["S21"]+test1["S41"]+test1["S43"]+test1["S23"]), self.roundpoint)
         
-        x2 = round(self.BPM_pmcc*((test2["S41"]-test2["S21"])+(test2["S43"]-test2["S23"]))/(test2["S21"]+test2["S41"]+test2["S43"]+test2["S23"]), 4)
-        y2 = round(self.BPM_pmcc*((test2["S41"]-test2["S43"])+(test2["S21"]-test2["S23"]))/(test2["S21"]+test2["S41"]+test2["S43"]+test2["S23"]), 4)
+        x2 = round(self.BPM_pmcc*((test2["S41"]-test2["S21"])+(test2["S43"]-test2["S23"]))/(test2["S21"]+test2["S41"]+test2["S43"]+test2["S23"]), self.roundpoint)
+        y2 = round(self.BPM_pmcc*((test2["S41"]-test2["S43"])+(test2["S21"]-test2["S23"]))/(test2["S21"]+test2["S41"]+test2["S43"]+test2["S23"]), self.roundpoint)
         
-        x3 = round(self.BPM_pmcc*((test3["S41"]-test3["S21"])+(test3["S43"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"]), 4)
-        y3 = round(self.BPM_pmcc*((test3["S41"]-test3["S43"])+(test3["S21"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"]), 4)
+        x3 = round(self.BPM_pmcc*((test3["S41"]-test3["S21"])+(test3["S43"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"]), self.roundpoint)
+        y3 = round(self.BPM_pmcc*((test3["S41"]-test3["S43"])+(test3["S21"]-test3["S23"]))/(test3["S21"]+test3["S41"]+test3["S43"]+test3["S23"]), self.roundpoint)
                 
-        x_avg = round((x1+x2+x3)/3, 4)
-        y_avg = round((y1+y2+y3)/3, 4)
-
-        print("First sets of sample data:\n %s" %test1)
-        print("Second sets of sample data:\n %s" %test2)
-        print("Third sets of sample data:\n %s" %test3)
-        print("X center(mm) for\n1st set: %s,\n2nd set: %s,\n3rd set: %s\n" %((x1*mm_conv),(x2*mm_conv),(x3*mm_conv)))
-        print("Y center(mm) for\n1st set: %s,\n2nd set: %s,\n3rd set: %s\n" %((y1*mm_conv),(y2*mm_conv),(y3*mm_conv)))
-        print("X average center(mm) is at: %s\n" % x_avg)
-        print("Y average center(mm) is at: %s\n" % y_avg)
-  
-        self.BPM_record.write("Record format is: \n")
-        self.BPM_record.write("S21,S41,S23,S43\n")
-        self.BPM_record.write("%s\n" %test1)
-        self.BPM_record.write("%s\n" %test2)
-        self.BPM_record.write("%s\n" %test2)
-        self.BPM_record.write("X center(mm) is at:\n")
-        self.BPM_record.write("%s,%s,%s\n" %((x1*mm_conv),(x2*mm_conv),(x3*mm_conv)))
-        self.BPM_record.write("Y center(mm) is at:\n")
-        self.BPM_record.write("%s,%s,%s\n" %((y1*mm_conv),(y2*mm_conv),(y3*mm_conv)))
+        x_avg = round((x1+x2+x3)/3, self.roundpoint)
+        y_avg = round((y1+y2+y3)/3, self.roundpoint)
         
-        self.BPM_record.write("X average center(mm) is at: %s\n" % x_avg)
-        self.BPM_record.write("Y average center(mm) is at: %s\n" % y_avg)
+        print("First sets of sample data:\n\n %.4f" %test1)
+        print("Second sets of sample data:\n\n %.4f" %test2)
+        print("Third sets of sample data:\n\n %.4f" %test3)
+        print("X center(mm) for\n1st set: %.4f,\n2nd set: %.4f,\n3rd set: %.4f\n" %((x1),(x2),(x3)))
+        print("Y center(mm) for\n1st set: %.4f,\n2nd set: %.4f,\n3rd set: %.4f\n" %((y1),(y2),(y3)))
+        print("X average center(mm): %.4f\n" % x_avg)
+        print("Y average center(mm): %.4f\n" % y_avg)
+  
+        self.BPM_record.write("Record format: \n")
+        self.BPM_record.write("Red->Blue, Red->Green, Yel->Blue, Yel->Green\n")
+        self.BPM_record.write("%.4f\n" %test1)
+        self.BPM_record.write("%.4f\n" %test2)
+        self.BPM_record.write("%.4f\n\n" %test2)
+        self.BPM_record.write("X center(mm):\n")
+        self.BPM_record.write("%.4f, %.4f, %.4f\n" %((x1),(x2),(x3)))
+        self.BPM_record.write("Y center(mm):\n")
+        self.BPM_record.write("%.4f, %.4f, %.4f\n\n" %((y1),(y2),(y3)))
+        
+        self.BPM_record.write("X average center(mm): %.4f\n" % x_avg)
+        self.BPM_record.write("Y average center(mm): %.4f\n\n" % y_avg)
 
         self.BPM_record.write("<dbFields>\n")
-        self.BPM_record.write("Date,PCMM,Frequency,Horizontal Center,Vertical Center")
-        self.BPM_record.write(self.rec_time_stampe+","+self.PCMM+","+x_avg+","+y_avg+"\n")
+        self.BPM_record.write("Date,PCMM,Frequency,Horizontal Center,Vertical Center\n")
+        self.BPM_record.write(str(self.rec_time_stampe)+","+self.BPM_pmcc_str+","+str(self.center_freq)+","+str(x_avg).format("%.4f")+","+str(y_avg).format("%.4f")+"\n")
         self.BPM_record.write("</dbFields>")
-
-            
