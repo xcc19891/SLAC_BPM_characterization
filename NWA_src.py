@@ -72,7 +72,9 @@ class BPM_chara:
                         
         self.AVER_data()    # Turning on averaging 
         self.center_freq=self.my_instr.ask_for_values("CENT?")
-        print("Center Frequency %s." % (self.center_freq))    # Double checking the center freq
+        freq1 = str(self.center_freq).split('[')[1]
+        self.center_freq = freq1.split(']')[0]
+        print("Center Frequency: %s Hz\n" % (self.center_freq))    # Double checking the center freq
         self.power=self.my_instr.ask_for_values("POWE?")
         print("Power at %s dBm. \n" % (self.power))              # Double checking the stimulis power
         self.BPM_record.write("NWA stimulis power: %s dBm\n" %self.power)
@@ -220,7 +222,7 @@ class BPM_chara:
 
         self.my_instr.write("AVERREST")     # reset the averaging 
         self.my_instr.write("AUTO")         # Auto scale
-        time.sleep(2)
+        time.sleep(4)
         self.my_instr.write("AVERREST")     # reset the averaging 
         time.sleep(self.instr_avg_wait_time)
         self.my_instr.write("WAIT")         # Wait for one clean sweep
@@ -276,7 +278,7 @@ class BPM_chara:
         self.trace1 = 0.0; self.trace2 = 0.0; self.trace3 = 0.0;
         self.my_instr.write("AVERREST")  # reset the averaging 
         self.my_instr.write("AUTO")        
-        time.sleep(2)
+        time.sleep(4)
         self.my_instr.write("AVERREST")     # reset the averaging 
         time.sleep(self.instr_avg_wait_time) 
         self.my_instr.write("WAIT")          # Wait for one clean sweep
@@ -333,7 +335,7 @@ class BPM_chara:
         
         self.my_instr.write("AVERREST")  # reset the averaging 
         self.my_instr.write("AUTO")        
-        time.sleep(2)
+        time.sleep(4)
         self.my_instr.write("AVERREST")     # reset the averaging 
         time.sleep(self.instr_avg_wait_time)
         self.my_instr.write("WAIT")          # Wait for one clean sweep
@@ -389,7 +391,7 @@ class BPM_chara:
 
         self.my_instr.write("AVERREST")  # reset the averaging 
         self.my_instr.write("AUTO")
-        time.sleep(2)
+        time.sleep(4)
         self.my_instr.write("AVERREST")     # reset the averaging         
         time.sleep(self.instr_avg_wait_time)
         self.my_instr.write("WAIT")          # Wait for one clean sweep
@@ -452,29 +454,29 @@ class BPM_chara:
                 
         x_avg = round((x1+x2+x3)/3, self.roundpoint)
         y_avg = round((y1+y2+y3)/3, self.roundpoint)
-
-        print("First sets of sample data:\n\n %s" %test1)
-        print("Second sets of sample data:\n\n %s" %test2)
-        print("Third sets of sample data:\n\n %s" %test3)
-        print("X center(mm) for\n1st set: %s,\n2nd set: %s,\n3rd set: %s\n" %((x1),(x2),(x3)))
-        print("Y center(mm) for\n1st set: %s,\n2nd set: %s,\n3rd set: %s\n" %((y1),(y2),(y3)))
-        print("X average center(mm): %s\n" % x_avg)
-        print("Y average center(mm): %s\n" % y_avg)
+        
+        print("First sets of sample data:\n\n %.4f" %test1)
+        print("Second sets of sample data:\n\n %.4f" %test2)
+        print("Third sets of sample data:\n\n %.4f" %test3)
+        print("X center(mm) for\n1st set: %.4f,\n2nd set: %.4f,\n3rd set: %.4f\n" %((x1),(x2),(x3)))
+        print("Y center(mm) for\n1st set: %.4f,\n2nd set: %.4f,\n3rd set: %.4f\n" %((y1),(y2),(y3)))
+        print("X average center(mm): %.4f\n" % x_avg)
+        print("Y average center(mm): %.4f\n" % y_avg)
   
         self.BPM_record.write("Record format: \n")
         self.BPM_record.write("Red->Blue, Red->Green, Yel->Blue, Yel->Green\n")
-        self.BPM_record.write("%s\n" %test1)
-        self.BPM_record.write("%s\n" %test2)
-        self.BPM_record.write("%s\n\n" %test2)
+        self.BPM_record.write("%.4f\n" %test1)
+        self.BPM_record.write("%.4f\n" %test2)
+        self.BPM_record.write("%.4f\n\n" %test2)
         self.BPM_record.write("X center(mm):\n")
-        self.BPM_record.write("%s, %s, %s\n" %((x1),(x2),(x3)))
+        self.BPM_record.write("%.4f, %.4f, %.4f\n" %((x1),(x2),(x3)))
         self.BPM_record.write("Y center(mm):\n")
-        self.BPM_record.write("%s, %s, %s\n\n" %((y1),(y2),(y3)))
+        self.BPM_record.write("%.4f, %.4f, %.4f\n\n" %((y1),(y2),(y3)))
         
-        self.BPM_record.write("X average center(mm): %s\n" % x_avg)
-        self.BPM_record.write("Y average center(mm): %s\n\n" % y_avg)
+        self.BPM_record.write("X average center(mm): %.4f\n" % x_avg)
+        self.BPM_record.write("Y average center(mm): %.4f\n\n" % y_avg)
 
         self.BPM_record.write("<dbFields>\n")
         self.BPM_record.write("Date,PCMM,Frequency,Horizontal Center,Vertical Center\n")
-        self.BPM_record.write(str(self.rec_time_stampe)+","+self.BPM_pmcc_str+","+str(self.center_freq)+","+str(x_avg)+","+str(y_avg)+"\n")
+        self.BPM_record.write(str(self.rec_time_stampe)+","+self.BPM_pmcc_str+","+str(self.center_freq)+","+str(x_avg).format("%.4f")+","+str(y_avg).format("%.4f")+"\n")
         self.BPM_record.write("</dbFields>")
