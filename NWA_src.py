@@ -92,8 +92,8 @@ class BPM_chara:
         print("Turning on averaging")
     	self.my_instr.write("AVEROON")
         self.instr_avg = self.my_instr.ask("AVERO?")
-        # self.instr_avg_wait_time = 5+(58)    # Guess work on hosw long to wait for the averaging to be done
-        self.instr_avg_wait_time = 2         # For testing only
+        self.instr_avg_wait_time = 5+(58)    # Guess work on hosw long to wait for the averaging to be done
+        # self.instr_avg_wait_time = 2         # For testing only
         # print(self.instr_avg)
         if int(self.instr_avg) == 1:
         	time.sleep(0.00001)
@@ -497,8 +497,8 @@ class BPM_chara:
         print(test2_str)
         print("Third sets of sample data:\n\n")
         print(test3_str)
-        print("X center(mm) for\n1st set: "+x1+",\n2nd set: "+x1+",\n3rd set: "+x1+"\n")
-        print("Y center(mm) for\n1st set: "+y1+",\n2nd set: "+y1+",\n3rd set: "+y1+"\n")
+        print("X center(mm) for\n1st set: "+x1+",\n2nd set: "+x2+",\n3rd set: "+x3+"\n")
+        print("Y center(mm) for\n1st set: "+y1+",\n2nd set: "+y2+",\n3rd set: "+y3+"\n")
         print("X average center(mm): "+x_avg+"\n")
         print("Y average center(mm): "+y_avg+"\n")
   
