@@ -202,7 +202,10 @@ class BPM_chara:
         #print("Changing the timeout timer to %s sec" %self.my_instr.timeout)
         test1 = self.S_TRAN()
         test2 = self.S_TRAN()
-        test3 = self.S_TRAN()        
+        test3 = self.S_TRAN()    
+        test1_str = self.S_TRAN()
+        test2_str = self.S_TRAN()
+        test3_str = self.S_TRAN()    
         self.my_instr.write("FORM4")    # Output in ASCII 
         self.my_instr.write("WAIT")
         
@@ -234,8 +237,10 @@ class BPM_chara:
                 self.trace1+=i
                 self.trace_data.extend([i])
         self.trace1_avg = round(self.trace1/self.dat_point, self.roundpoint)
-        print(self.trace1_avg)
+        self.trace1_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace1_avg)
+        print(self.trace1_avg_str)
         test1["S21"] = self.trace1_avg
+        test1_str["S21"] = self.trace1_avg_str
 
 
         self.my_instr.write("AVERREST")  # reset the averaging 
@@ -249,8 +254,10 @@ class BPM_chara:
                 self.trace2+=i
                 self.trace_data.extend([i])
         self.trace2_avg = round(self.trace2/self.dat_point, self.roundpoint)
-        print(self.trace2_avg)        
+        self.trace2_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace2_avg)
+        print(self.trace2_avg_str)        
         test2["S21"] = self.trace2_avg
+        test2_str["S21"] = self.trace2_avg_str
 
 
         self.my_instr.write("AVERREST")  # reset the averaging 
@@ -264,8 +271,10 @@ class BPM_chara:
                 self.trace3+=i
                 self.trace_data.extend([i])
         self.trace3_avg = round(self.trace3/self.dat_point, self.roundpoint)
-        print(self.trace3_avg)        
+        self.trace3_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace3_avg)
+        print(self.trace3_avg_str)        
         test3["S21"] = self.trace3_avg
+        test3_str["S21"] = self.trace3_avg_str
         print("\n\n")        
 
         # ////////////////////////////
@@ -290,9 +299,10 @@ class BPM_chara:
                 self.trace1+=i
                 self.trace_data.extend([i])
         self.trace1_avg = round(self.trace1/self.dat_point, self.roundpoint)
-        print(self.trace1_avg)
+        self.trace1_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace1_avg)
+        print(self.trace1_avg_str)
         test1["S41"] = self.trace1_avg
-
+        test1_str["S41"] = self.trace1_avg_str
 
         self.my_instr.write("AVERREST")  # reset the averaging 
         time.sleep(self.instr_avg_wait_time) 
@@ -305,8 +315,10 @@ class BPM_chara:
                 self.trace2+=i
                 self.trace_data.extend([i])
         self.trace2_avg = round(self.trace2/self.dat_point, self.roundpoint)
-        print(self.trace2_avg)        
+        self.trace2_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace2_avg)
+        print(self.trace2_avg_str)        
         test2["S41"] = self.trace2_avg
+        test2_str["S41"] = self.trace2_avg_str
         
 
         self.my_instr.write("AVERREST")  # reset the averaging 
@@ -320,8 +332,10 @@ class BPM_chara:
                 self.trace3+=i
                 self.trace_data.extend([i])
         self.trace3_avg = round(self.trace3/self.dat_point, self.roundpoint)
-        print(self.trace3_avg)        
+        self.trace3_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace3_avg)
+        print(self.trace3_avg_str)        
         test3["S41"] = self.trace3_avg
+        test3_str["S41"] = self.trace3_avg_str
         print("\n\n")
         
         # ////////////////////////////
@@ -347,8 +361,10 @@ class BPM_chara:
                 self.trace1+=i
                 self.trace_data.extend([i])
         self.trace1_avg = round(self.trace1/self.dat_point, self.roundpoint)
-        print(self.trace1_avg)
+        self.trace1_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace1_avg)
+        print(self.trace1_avg_str)
         test1["S43"] = self.trace1_avg
+        test1_str["S43"] = self.trace1_avg_str
 
 
         self.my_instr.write("AVERREST")  # reset the averaging 
@@ -362,8 +378,10 @@ class BPM_chara:
                 self.trace2+=i
                 self.trace_data.extend([i])
         self.trace2_avg = round(self.trace2/self.dat_point, self.roundpoint)
-        print(self.trace2_avg)        
+        self.trace2_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace2_avg)
+        print(self.trace2_avg_str)        
         test2["S43"] = self.trace2_avg
+        test2_str["S43"] = self.trace2_avg_str
         
 
         self.my_instr.write("AVERREST")  # reset the averaging 
@@ -376,8 +394,10 @@ class BPM_chara:
                 self.trace3+=i
                 self.trace_data.extend([i])
         self.trace3_avg = round(self.trace3/self.dat_point, self.roundpoint)
-        print(self.trace3_avg)        
+        self.trace3_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace3_avg)
+        print(self.trace3_avg_str)        
         test3["S43"] = self.trace3_avg
+        test3_str["S43"] = self.trace3_avg_str
         print("\n\n")
 
         # ////////////////////////////
@@ -403,8 +423,10 @@ class BPM_chara:
                 self.trace1+=i
                 self.trace_data.extend([i])
         self.trace1_avg = round(self.trace1/self.dat_point, self.roundpoint)
-        print(self.trace1_avg)
+        self.trace1_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace1_avg)
+        print(self.trace1_avg_str)
         test1["S23"] = self.trace1_avg
+        test1_str["S23"] = self.trace1_avg_str
 
 
         self.my_instr.write("AVERREST")  # reset the averaging 
@@ -418,8 +440,10 @@ class BPM_chara:
                 self.trace2+=i
                 self.trace_data.extend([i])
         self.trace2_avg = round(self.trace2/self.dat_point, self.roundpoint)
-        print(self.trace2_avg)        
+        self.trace2_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace2_avg)
+        print(self.trace2_avg_str)        
         test2["S23"] = self.trace2_avg
+        test2_str["S23"] = self.trace2_avg_str
         
 
         self.my_instr.write("AVERREST")  # reset the averaging 
@@ -433,8 +457,10 @@ class BPM_chara:
                 self.trace3+=i
                 self.trace_data.extend([i])
         self.trace3_avg = round(self.trace3/self.dat_point, self.roundpoint)
-        print(self.trace3_avg)        
+        self.trace3_avg_str = "{x:.{width}f}".format(width=self.roundpoint, x=self.trace3_avg)
+        print(self.trace3_avg_str)        
         test3["S23"] = self.trace3_avg
+        test3_str["S23"] = self.trace3_avg_str
         print("\n\n")      
         
         #Changing back the timeout timer
@@ -455,28 +481,44 @@ class BPM_chara:
         x_avg = round((x1+x2+x3)/3, self.roundpoint)
         y_avg = round((y1+y2+y3)/3, self.roundpoint)
         
-        print("First sets of sample data:\n\n %.4f" %test1)
-        print("Second sets of sample data:\n\n %.4f" %test2)
-        print("Third sets of sample data:\n\n %.4f" %test3)
-        print("X center(mm) for\n1st set: %.4f,\n2nd set: %.4f,\n3rd set: %.4f\n" %((x1),(x2),(x3)))
-        print("Y center(mm) for\n1st set: %.4f,\n2nd set: %.4f,\n3rd set: %.4f\n" %((y1),(y2),(y3)))
-        print("X average center(mm): %.4f\n" % x_avg)
-        print("Y average center(mm): %.4f\n" % y_avg)
+        x1 = "{x:.{width}f}".format(width=self.roundpoint, x=x1)
+        x2 = "{x:.{width}f}".format(width=self.roundpoint, x=x2)
+        x3 = "{x:.{width}f}".format(width=self.roundpoint, x=x3)
+        y1 = "{x:.{width}f}".format(width=self.roundpoint, x=y1)
+        y2 = "{x:.{width}f}".format(width=self.roundpoint, x=y2)
+        y3 = "{x:.{width}f}".format(width=self.roundpoint, x=y3)
+
+        x_avg = "{x:.{width}f}".format(width=self.roundpoint, x=x_avg)
+        y_avg = "{x:.{width}f}".format(width=self.roundpoint, x=y_avg)
+
+        print("First sets of sample data:\n\n")
+        print(test1_str)
+        print("Second sets of sample data:\n\n")
+        print(test2_str)
+        print("Third sets of sample data:\n\n")
+        print(test3_str)
+        print("X center(mm) for\n1st set: "+x1+",\n2nd set: "+x1+",\n3rd set: "+x1+"\n")
+        print("Y center(mm) for\n1st set: "+y1+",\n2nd set: "+y1+",\n3rd set: "+y1+"\n")
+        print("X average center(mm): "+x_avg+"\n")
+        print("Y average center(mm): "+y_avg+"\n")
   
         self.BPM_record.write("Record format: \n")
         self.BPM_record.write("Red->Blue, Red->Green, Yel->Blue, Yel->Green\n")
-        self.BPM_record.write("%.4f\n" %test1)
-        self.BPM_record.write("%.4f\n" %test2)
-        self.BPM_record.write("%.4f\n\n" %test2)
+        self.BPM_record.write(str(test1_str))
+        self.BPM_record.write("\n")
+        self.BPM_record.write(str(test2_str))
+        self.BPM_record.write("\n")
+        self.BPM_record.write(str(test3_str))
+        self.BPM_record.write("\n\n")
         self.BPM_record.write("X center(mm):\n")
-        self.BPM_record.write("%.4f, %.4f, %.4f\n" %((x1),(x2),(x3)))
+        self.BPM_record.write(x1+", "+x2+", "+x3+"\n")
         self.BPM_record.write("Y center(mm):\n")
-        self.BPM_record.write("%.4f, %.4f, %.4f\n\n" %((y1),(y2),(y3)))
+        self.BPM_record.write(y1+", "+y2+", "+y3+"\n")
         
-        self.BPM_record.write("X average center(mm): %.4f\n" % x_avg)
-        self.BPM_record.write("Y average center(mm): %.4f\n\n" % y_avg)
+        self.BPM_record.write("X average center(mm): "+x_avg+"\n")
+        self.BPM_record.write("Y average center(mm): "+y_avg+"\n\n")
 
         self.BPM_record.write("<dbFields>\n")
         self.BPM_record.write("Date,PCMM,Frequency,Horizontal Center,Vertical Center\n")
-        self.BPM_record.write(str(self.rec_time_stampe)+","+self.BPM_pmcc_str+","+str(self.center_freq)+","+str(x_avg).format("%.4f")+","+str(y_avg).format("%.4f")+"\n")
+        self.BPM_record.write(str(self.rec_time_stampe)+","+self.BPM_pmcc_str+","+str(self.center_freq)+","+str(x_avg)+","+str(y_avg)+"\n")
         self.BPM_record.write("</dbFields>")
