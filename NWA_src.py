@@ -8,6 +8,7 @@ Automate the BPM characterization process by using PyVISA to communicate with a 
 '''
 from visa import *
 from math import pow, exp
+from subprocess import call
 import time
 import sys
 import datetime
@@ -43,6 +44,7 @@ class BPM_chara:
         self.filedate_format = self.filedate.strftime("%d%b%Y-%H_%M_%S")
         self.rec_time_stampe = self.filedate.strftime("%Y-%m-%d %H:%M:%S")
         # Opening files for recording
+        self.filename   = ("BPM-"+self.BPM_ser+"-cal-"+self.filedate_format+".txt")
         self.BPM_record = open("BPM-"+self.BPM_ser+"-cal-"+self.filedate_format+".txt", "w+")
         
         self.BPM_record.write("Calibration Date:")
@@ -51,6 +53,7 @@ class BPM_chara:
         self.BPM_pmcc_str = raw_input("Please enter BPM PCMM in mm (1/4 of the BPM inner diameter): \n--->")
         self.BPM_pmcc = (float(self.BPM_pmcc_str))
         self.BPM_record.write("BPM PCMM: %s mm (1/4 of the inner diameter)\n" %self.BPM_pmcc_str)
+
         self.BPM_cnt_f = raw_input("What is the BPM's processing freq? (In MHZ)\n---> ")
         self.BPM_cnt_f_int = int(self.BPM_cnt_f)    # Setting NWA frequency
         self.my_instr.write("CENT "+self.BPM_cnt_f+" MHZ; SPAN 0 HZ;OPC?")    # Changing the span to 0Hz because we are only interested in one freq.
@@ -60,6 +63,7 @@ class BPM_chara:
         #self.my_instr.write("STAR "+self.NWA_star+" MHZ; STOP "+self.NWA_stop+" MHZ;OPC?")
         self.my_instr.write("POWE10")    # For the HP8753D model it can only output stimulis power of 10dBm
         self.my_instr.write("LINM")      # Setting display to linear magnitude  
+        self.my_instr.write("IFBW 100HZ")   # IF bandwidth set to 100Hz
         
         print("WARNING:If you are running this process for the first time\n you need to calibrate the network analyzer")
         cal_opt = raw_input("Do you want to calibrate the Network analyzer?\n---> ")
@@ -81,7 +85,14 @@ class BPM_chara:
 
         self.S21_measure()
         self.BPM_record.close()
-                
+        save_opt = raw_input("Would you like to save this data?\n---> ")
+        if (save_opt == "YES") or (save_opt == "YEs") or (save_opt == "Yes") or (save_opt == "yes") or (save_opt == "Y") or (save_opt == "y"):
+            print("Characterization finished")
+        else:
+            del_cmd = 'del -f '+ self.filename
+            call(del_cmd, shell=True)
+            print("Characterization finished")
+
         
 
     def AVER_data(self):
