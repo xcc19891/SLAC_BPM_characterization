@@ -21,4 +21,8 @@ The script will procduce a .txt file with the BPM serial number, characterizatio
 v1.1
 09/19/2016
 Fixing a wait bug for the 4th data acquisition.
-Adding a second text output document for database import
+Adding a second text output document for database import.
+
+V1.11
+09/22/2016
+Adding save file option, adding running another option.
