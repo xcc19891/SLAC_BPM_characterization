@@ -4,7 +4,7 @@ Instrumentation and Controls Division
 Date: 03/18/2013
 author: Chengcheng Xu
 '''
-from NWA_src1 import *
+from NWA_src import *
 i = 1
 while i == 1:
 	BPM = BPM_chara()
