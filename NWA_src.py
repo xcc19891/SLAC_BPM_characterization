@@ -223,7 +223,7 @@ class BPM_chara:
         # ////////////////////////////
         # Measuring RED to BLUE
         # ////////////////////////////
-        raw_input("Connect port 1 to RED-(1) and port 2 to BLUE-(2), then press enter")
+        raw_input("Connect port 1 to BPM connector 1 and port 2 to BPM connector 2, then press enter")
         print("Taking data")
         self.trace = []
         self.trace_data = []
@@ -291,7 +291,7 @@ class BPM_chara:
         # ////////////////////////////
         # Measuring RED to GREEN
         # ////////////////////////////            
-        raw_input("Connect port 1 to RED-(1) and port 2 to GREEN-(4), then press enter")
+        raw_input("Connect port 1 to BPM connector 1 and port 2 to BPM connector 4, then press enter")
         print("Taking data")
         self.trace = []
         self.trace_data = []
@@ -352,7 +352,7 @@ class BPM_chara:
         # ////////////////////////////
         # Measuring YELLOW to GREEN
         # ////////////////////////////        
-        raw_input("Connect port 1 to YELLOW-(3) and port 2 to GREEN-(4), then press enter")
+        raw_input("Connect port 1 to BPM connector 3 and port 2 to BPM connector 4, then press enter")
         print("Taking data")
         self.trace = []
         self.trace_data = []
@@ -414,7 +414,7 @@ class BPM_chara:
         # ////////////////////////////
         # Measuring YELLOW to BLUE
         # ////////////////////////////        
-        raw_input("Connect port 1 to YELLOW-(3) and port 2 to BLUE-(2), then press enter")
+        raw_input("Connect port 1 to BPM connector 3 and port 2 to BPM connector 2, then press enter")
         print("Taking data")
         self.trace = []
         self.trace_data = []
